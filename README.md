@@ -13,7 +13,7 @@ NativeCron - Static Generator, sometimes i am only lazy!
 - Systemd
 
 ###### for beginners and lazy pros
-[Github-Pages](https://volkansah.github.io/NativeCron-Generator/)
+[Use it](https://volkansah.github.io/NativeCron-Generator/)
 
 ## Screenshot
 
