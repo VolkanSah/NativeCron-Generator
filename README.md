@@ -6,7 +6,7 @@
 
 NativeCron - Static Generator, sometimes i am only lazy!
 
-![Natvie cron Generator](Screenshot-cron.jpg)
+
 
 - Linux-Cron
 - macOS (lauchchd)
@@ -14,3 +14,7 @@ NativeCron - Static Generator, sometimes i am only lazy!
 
 ###### for beginners and lazy pros
 [Github-Pages](https://volkansah.github.io/NativeCron-Generator/)
+
+## Screenshot
+
+![Natvie cron Generator](Screenshot-cron.jpg)
