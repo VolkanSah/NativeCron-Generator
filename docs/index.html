@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NativeCron - Static Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans">
+
+    <div class="max-w-3xl mx-auto px-4 py-12" x-data="cronGenerator()">
+        <header class="mb-10 text-center">
+            <h1 class="text-3xl font-bold tracking-tight">NativeCron</h1>
+            <p class="text-gray-500 mt-2">Privacy-first, client-side schedule generator.</p>
+        </header>
+
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Min</label>
+                    <input type="text" x-model="min" class="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Hour</label>
+                    <input type="text" x-model="hour" class="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Day</label>
+                    <input type="text" x-model="day" class="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Month</label>
+                    <input type="text" x-model="month" class="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Weekday</label>
+                    <input type="text" x-model="weekday" class="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+            </div>
+            
+            <div class="mt-6">
+                <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Command to execute</label>
+                <input type="text" x-model="command" placeholder="/usr/bin/python3 script.py" class="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+        </div>
+
+        <div class="flex space-x-2 mb-4 border-b">
+            <template x-for="tab in ['Linux (Cron)', 'macOS (Launchd)', 'Systemd']">
+                <button 
+                    @click="activeTab = tab" 
+                    :class="activeTab === tab ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                    class="py-2 px-4 border-b-2 font-medium text-sm transition-colors"
+                    x-text="tab">
+                </button>
+            </template>
+        </div>
+
+        <div class="bg-gray-900 rounded-lg p-5 relative group">
+            <button @click="copyToClipboard()" class="absolute top-3 right-3 bg-gray-700 hover:bg-gray-600 text-white text-xs py-1 px-3 rounded transition">
+                <span x-text="copied ? 'Copied!' : 'Copy'"></span>
+            </button>
+            
+            <pre class="text-green-400 overflow-x-auto text-sm leading-relaxed font-mono">
+<code x-show="activeTab === 'Linux (Cron)'" x-text="`${min} ${hour} ${day} ${month} ${weekday} ${command}`"></code>
+<code x-show="activeTab === 'macOS (Launchd)'" x-text="generateLaunchd()"></code>
+<code x-show="activeTab === 'Systemd'" x-text="generateSystemd()"></code>
+            </pre>
+        </div>
+
+        <footer class="mt-12 text-center text-gray-400 text-xs">
+            <p>Generated entirely in your browser. Open source on GitHub.</p>
+        </footer>
+    </div>
+
+    <script>
+        function cronGenerator() {
+            return {
+                min: '*',
+                hour: '*',
+                day: '*',
+                month: '*',
+                weekday: '*',
+                command: '/path/to/command',
+                activeTab: 'Linux (Cron)',
+                copied: false,
+
+                copyToClipboard() {
+                    let text = "";
+                    if (this.activeTab === 'Linux (Cron)') text = `${this.min} ${this.hour} ${this.day} ${this.month} ${this.weekday} ${this.command}`;
+                    if (this.activeTab === 'macOS (Launchd)') text = this.generateLaunchd();
+                    if (this.activeTab === 'Systemd') text = this.generateSystemd();
+
+                    navigator.clipboard.writeText(text);
+                    this.copied = true;
+                    setTimeout(() => this.copied = false, 2000);
+                },
+
+                generateLaunchd() {
+                    return `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.user.job</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>${this.command}</string>
+    </array>
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Minute</key> <integer>${this.min === '*' ? 0 : this.min}</integer>
+        <key>Hour</key> <integer>${this.hour === '*' ? 0 : this.hour}</integer>
+    </dict>
+</dict>
+</plist>`;
+                },
+
+                generateSystemd() {
+                    return `[Unit]
+Description=Custom Schedule
+
+[Timer]
+OnCalendar=*-*-${this.day} ${this.hour}:${this.min}:00
+Unit=myjob.service
+
+[Install]
+WantedBy=timers.target`;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
